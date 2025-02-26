@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="SlashLabs - Advanced AI Research and Benchmarking with a focus on state-of-the-art models and transparent evaluation.">
+    <title>SlashLabs - AI Research & Benchmarking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background-color: #000;
+            color: #66FF66;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Terminal scan line effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(transparent 50%, rgba(0, 0, 0, 0.05) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        /* CRT flicker effect */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 11;
+            animation: flicker 0.3s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0% { opacity: 0.02; }
+            100% { opacity: 0.05; }
+        }
+        
+        header {
+            margin-bottom: 40px;
+            padding: 20px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+            flex-direction: column;
+        }
+        
+        .logo {
+            width: 700px;
+            height: auto;
+        }
+        
+        /* Blinking cursor */
+        .cursor {
+            display: inline-block;
+            width: 12px;
+            height: 24px;
+            background-color: #66FF66;
+            margin-left: 5px;
+            animation: blink 1.2s step-end infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        /* Hamburger Menu Styles */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            width: 30px;
+            height: 25px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 102;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .hamburger span {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background-color: #66FF66;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        nav {
+            margin: 30px 0;
+            transition: all 0.3s ease;
+        }
+        
+        nav ul {
+            list-style-type: none;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        nav ul li {
+            margin-right: 30px;
+            position: relative;
+        }
+        
+        nav ul li a {
+            color: #66FF66;
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.3s;
+            display: inline-block;
+            padding: 5px 0;
+            border-bottom: 1px solid transparent;
+        }
+        
+        nav ul li a:hover {
+            color: #FFFFFF;
+            border-bottom: 1px solid #66FF66;
+        }
+        
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+            
+            nav {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 250px;
+                height: 100vh;
+                background-color: rgba(0, 0, 0, 0.9);
+                z-index: 101;
+                padding-top: 70px;
+                transition: right 0.3s ease;
+                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+            }
+            
+            nav.active {
+                right: 0;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                padding-left: 20px;
+            }
+            
+            nav ul li {
+                margin-bottom: 15px;
+                margin-right: 0;
+            }
+            
+            .hamburger.active span:nth-child(1) {
+                transform: translateY(11px) rotate(45deg);
+            }
+            
+            .hamburger.active span:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .hamburger.active span:nth-child(3) {
+                transform: translateY(-11px) rotate(-45deg);
+            }
+            
+            .nav-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 100;
+                display: none;
+            }
+            
+            .nav-overlay.active {
+                display: block;
+            }
+        }
+        
+        .terminal-window {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .terminal-header {
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            margin: -20px -20px 15px -20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .terminal-buttons {
+            display: flex;
+        }
+        
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 6px;
+        }
+        
+        .terminal-button.red { background-color: #FF5F56; }
+        .terminal-button.yellow { background-color: #FFBD2E; }
+        .terminal-button.green { background-color: #27C93F; }
+        
+        h1, h2, h3 {
+            color: #FFFFFF;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            margin-top: 0;
+            color: #FFFFFF;
+        }
+        
+        .prompt {
+            color: #66FF66;
+            margin-bottom: 5px;
+        }
+        
+        .response {
+            color: #CCCCCC;
+            margin-bottom: 15px;
+            animation: type 1s steps(60, end);
+            overflow: hidden;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-width: 100%;
+        }
+        
+        @keyframes type {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        .typing-effect {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid #66FF66;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #66FF66 }
+        }
+        
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            border-top: 1px solid #333;
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .card {
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 255, 0, 0.1);
+        }
+        
+        button, .btn {
+            background-color: transparent;
+            color: #66FF66;
+            border: 1px solid #66FF66;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            transition: all 0.3s;
+            margin-top: 10px;
+            width: auto;
+            display: inline-block;
+        }
+        
+        button:hover, .btn:hover {
+            background-color: #66FF66;
+            color: #000;
+        }
+        
+        button:active, .btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* Media Queries */
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            nav ul {
+                flex-direction: column;
+            }
+            
+            nav ul li {
+                margin-bottom: 10px;
+                margin-right: 0;
+            }
+            
+            .terminal-window {
+                padding: 15px;
+            }
+            
+            .response {
+                font-size: 14px;
+            }
+            
+            body {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .logo-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .logo {
+                width: 560px;
+                margin-bottom: 15px;
+            }
+            
+            .typing-effect {
+                font-size: 1.2rem;
+            }
+            
+            .terminal-header {
+                font-size: 14px;
+            }
+            
+            .prompt, .response {
+                font-size: 13px;
+            }
+            
+            input[type="email"] {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 300" class="logo">
+                <!-- Black background -->
+                <rect width="500" height="300" fill="#000000" />
+                
+                <!-- Terminal border with subtle glow -->
+                <rect x="50" y="70" width="200" height="80" rx="5" ry="5" fill="none" stroke="#333" stroke-width="2" />
+                
+                <!-- Command prompt line -->
+                <text x="70" y="105" font-family="monospace" font-size="24" fill="#66FF66">
+                  /labs:>
+                </text>
+                
+                <!-- Blinking cursor animation -->
+                <rect x="180" y="85" width="15" height="25" fill="#66FF66">
+                  <animate attributeName="opacity" values="1;0;1" dur="1.2s" repeatCount="indefinite" />
+                </rect>
+                
+                <!-- Subtle terminal glow overlay -->
+                <rect x="50" y="70" width="200" height="80" rx="5" ry="5" fill="url(#scanline)" opacity="0.1" />
+                
+                <!-- Scanline effect -->
+                <defs>
+                  <pattern id="scanline" patternUnits="userSpaceOnUse" width="500" height="6" patternTransform="rotate(0)">
+                    <line x1="0" y1="3" x2="500" y2="3" stroke="#FFFFFF" stroke-width="1" opacity="0.1" />
+                  </pattern>
+                </defs>
+                
+                <!-- CRT effect -->
+                <rect width="500" height="300" fill="none" stroke="#33FF33" stroke-width="1" opacity="0.05">
+                  <animate attributeName="opacity" values="0.05;0.1;0.05" dur="3s" repeatCount="indefinite" />
+                </rect>
+            </svg>
+        </div>
+        <h2 class="typing-effect">Welcome to SlashLabs.ai</h2>
+        
+        <!-- Hamburger Menu Button -->
+        <div class="hamburger" id="hamburger-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <!-- Navigation Overlay -->
+        <div class="nav-overlay" id="nav-overlay"></div>
+        
+        <nav id="main-nav">
+            <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#research">Research</a></li>
+                <li><a href="#benchmarks">Benchmarks</a></li>
+                <li><a href="#team">Team</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <section id="about" class="section">
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <span>about.txt</span>
+                    <div class="terminal-buttons">
+                        <div class="terminal-button red"></div>
+                        <div class="terminal-button yellow"></div>
+                        <div class="terminal-button green"></div>
+                    </div>
+                </div>
+                <div class="prompt">/labs:> cat about.txt</div>
+                <div class="response">
+SlashLabs is at the forefront of artificial intelligence research and benchmarking. 
+Founded by a team of ex Redhat|IBM|AWS and Meta engineers, we're dedicated to advancing 
+the field through rigorous experimentation, innovative methodologies, and transparent benchmarks.
+
+Our mission is to push the boundaries of what's possible in AI while ensuring that 
+advancements are measured accurately, compared fairly, and deployed responsibly.
+                </div>
+                <div class="prompt">/labs:> ./capabilities.sh</div>
+                <div class="response">
+- State-of-the-art model development
+- Performance optimization
+- Cross-model benchmarking
+- Bias detection and mitigation
+- Resource-efficient AI deployment
+- Open-source tools and frameworks
+                </div>
+            </div>
+        </section>
+        
+        <section id="research" class="section">
+            <h2>Latest Research</h2>
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <span>/research</span>
+                    <div class="terminal-buttons">
+                        <div class="terminal-button red"></div>
+                        <div class="terminal-button yellow"></div>
+                        <div class="terminal-button green"></div>
+                    </div>
+                </div>
+                <div class="prompt">/labs:> ls -la /research/current</div>
+                <div class="response">
+drwxr-xr-x  5 slashlabs  staff  160 Feb 26 09:42 enhanced-contextual-embedding/
+drwxr-xr-x  5 slashlabs  staff  160 Feb 26 09:40 multimodal-fusion/
+drwxr-xr-x  5 slashlabs  staff  160 Feb 24 14:23 metadata-augmented-embeddings/
+drwxr-xr-x  5 slashlabs  staff  160 Feb 20 11:15 sparse-activation/
+                </div>
+                <div class="prompt">/labs:> cat /research/highlights.md</div>
+                <div class="response">
+# Research Highlights
+
+## Metadata-Augmented Embeddings
+The technique of enhancing LLM embeddings with metadata is commonly referred to as 
+"Metadata-Augmented Embeddings" or "Hybrid Embeddings." In this approach, traditional vector 
+embeddings generated by large language models are enriched with structured metadata to 
+improve retrieval and relevance. The metadata typically includes information like document 
+creation date, author, categories, tags, or any other relevant contextual information that 
+might not be captured in the semantic vector representation alone.
+
+## Enhanced Contextual Embedding
+This technique is particularly valuable in retrieval-augmented generation (RAG) systems, 
+where it allows for more precise document retrieval by filtering and ranking results based 
+on both semantic similarity and metadata attributes. Some implementations refer to this as 
+"Metadata-Enhanced Retrieval" or "Structured Augmented Embeddings" depending on the specific 
+implementation details and the retrieval system being used.
+
+## Reference Architectures
+Scaleable reference architectures for deploying embedding and retrieval systems in 
+both on-premises environments and major cloud platforms. These reference implementations include 
+infrastructure-as-code templates, configuration guides, and performance optimization recommendations 
+tailored to different deployment scenarios and scaling requirements.
+                </div>
+            </div>
+        </section>
+        
+        <section id="benchmarks" class="section">
+            <h2>OSS Benchmarking Suite [in development]</h2>
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <span>pip install dabar</span>
+                    <div class="terminal-buttons">
+                        <div class="terminal-button red"></div>
+                        <div class="terminal-button yellow"></div>
+                        <div class="terminal-button green"></div>
+                    </div>
+                </div>
+                <div class="prompt">/labs:> cat /benchmarks/framework.md</div>
+                <div class="response">
+# DABAR Framework
+Distributed AI Benchmarking And Reporting (DABAR) is our decentralized Python 
+framework designed to evaluate AI systems' performance across multiple dimensions.
+
+By leveraging a distributed testing architecture and comprehensive reporting tools, 
+DABAR provides an extensive platform for benchmarking AI models in varied 
+computational environments.
+                </div>
+                <div class="prompt">/labs:> dabar --list-engines</div>
+                <div class="response">
+Available Benchmark Engines:
+- MMLU (Massive Multitask Language Understanding)
+- MT-Bench
+- ARC (AI2 Reasoning Challenge)
+- HellaSwag
+- TruthfulQA
+- WinoGrande
+- GSM8K (Grade School Math 8K)
+                </div>
+                <div class="prompt">/labs:> cat /benchmarks/features.txt</div>
+                <div class="response">
+Core Components:
+
+1. Distributed Testing Architecture
+   - Decentralized Testing Nodes
+   - Parallel Execution
+   - Coordinated Starts
+   - Secret Store for API keys and tokens
+
+2. Environmental Reporting
+   - System Utilization Monitoring (GPU, CPU, RAM, VRAM)
+   - Machine Health Checks
+   - Resource Utilization Analysis
+   - Host OS Discovery
+   - Hardware Discovery
+
+3. Comprehensive Benchmarking
+   - Pluggable Benchmark Engine Support
+   - Standardized Evaluation Protocols
+   - Configurable via YAML
+                </div>
+            </div>
+        </section>
+        
+        <section id="github" class="section">
+            <h2>GitHub Repositories</h2>
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <span>github.com</span>
+                    <div class="terminal-buttons">
+                        <div class="terminal-button red"></div>
+                        <div class="terminal-button yellow"></div>
+                        <div class="terminal-button green"></div>
+                    </div>
+                </div>
+                <div class="prompt">/labs:> echo "To ontribute to OSS Projects"</div>
+                <div class="response">
+Visit our GitHub repositories at <a href="https://github.com/slashlabs-ai" target="_blank" style="color: #66FF66; text-decoration: underline;">https://github.com/slashlabs-ai</a>
+                </div>
+            </div>
+        </section>
+        
+        <section id="team" class="section">
+            <h2>Our Team</h2>
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <span>team.sh</span>
+                    <div class="terminal-buttons">
+                        <div class="terminal-button red"></div>
+                        <div class="terminal-button yellow"></div>
+                        <div class="terminal-button green"></div>
+                    </div>
+                </div>
+                <div class="prompt">/labs:> grep "expertise" /team/profiles.json | sort</div>
+                <div class="response">
+"expertise": "Causality and Reinforcement Learning",
+"expertise": "Computational Linguistics",
+"expertise": "Distributed Systems",
+"expertise": "Foundation Model Architectures",
+"expertise": "Multimodal Learning",
+"expertise": "Neural Scaling",
+"expertise": "Optimization Methods",
+"expertise": "Responsible AI"
+                </div>
+                <div class="prompt">/labs:> cat /team/join.txt</div>
+                <div class="response">
+SlashLabs is always looking for exceptional researchers, engineers, and thought leaders 
+to join our team. We value creativity, rigor, and a commitment to advancing AI capabilities
+responsibly.
+
+Current openings:
+- Research Scientist (Reasoning)
+- ML Engineer (Systems)
+                </div>
+            </div>
+        </section>
+        
+        <section id="contact" class="section">
+            <h2>Get In Touch</h2>
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <span>/contact</span>
+                    <div class="terminal-buttons">
+                        <div class="terminal-button red"></div>
+                        <div class="terminal-button yellow"></div>
+                        <div class="terminal-button green"></div>
+                    </div>
+                </div>
+                <div class="prompt">/labs:> cat /contact/info.txt</div>
+                <div class="response">
+Contact Us:
+engineering@slashlabs.ai - Job applications and career opportunities and inquries 
+
+Location:
+SlashLabs Research Center
+San Francisco, CA 94107
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 SlashLabs | Advancing AI through Research and Benchmarking</p>
+    
+    <script>
+        // Simple animation for terminal responses
+        document.addEventListener('DOMContentLoaded', function() {
+            const responses = document.querySelectorAll('.response');
+            responses.forEach((response, index) => {
+                setTimeout(() => {
+                    response.style.animation = 'type 1s steps(60, end)';
+                    response.style.width = '100%';
+                }, index * 100);
+            });
+            
+            // Hamburger Menu Functionality
+            const hamburger = document.getElementById('hamburger-menu');
+            const nav = document.getElementById('main-nav');
+            const overlay = document.getElementById('nav-overlay');
+            
+            hamburger.addEventListener('click', function() {
+                hamburger.classList.toggle('active');
+                nav.classList.toggle('active');
+                overlay.classList.toggle('active');
+                document.body.style.overflow = nav.classList.contains('active') ? 'hidden' : '';
+            });
+            
+            overlay.addEventListener('click', function() {
+                hamburger.classList.remove('active');
+                nav.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            
+            // Close menu when a navigation link is clicked
+            const navLinks = document.querySelectorAll('nav ul li a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    hamburger.classList.remove('active');
+                    nav.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
